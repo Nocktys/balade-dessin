@@ -79,6 +79,7 @@ function FitBoundsOnPausePoint({
   pausePoint: [number, number] | null;
 }) {
   const map = useMap();
+  const hasFittedOnce = useRef(false);
 
   const bounds = useMemo(() => {
     if (!userPosition || !pausePoint) return null;
@@ -86,10 +87,13 @@ function FitBoundsOnPausePoint({
   }, [userPosition, pausePoint]);
 
   useEffect(() => {
-    if (!bounds) return;
+    if (!bounds || hasFittedOnce.current) return;
+
     map.fitBounds(bounds, {
       padding: [40, 40],
     });
+
+    hasFittedOnce.current = true;
   }, [bounds, map]);
 
   return null;
