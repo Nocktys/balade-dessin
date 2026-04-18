@@ -115,12 +115,12 @@ export default function Home() {
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [walkDuration, setWalkDuration] = useState<20 | 30 | 40>(30);
   const [showArrivalOverlay, setShowArrivalOverlay] = useState(false);
-  const [isTestArrivalMode, setIsTestArrivalMode] = useState(true);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingSeconds, setDrawingSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showDrawingComplete, setShowDrawingComplete] = useState(false);
   const [hasTriggeredArrival, setHasTriggeredArrival] = useState(false);
+  const [hasLocationFix, setHasLocationFix] = useState(false);
   useEffect(() => {
     if (!isTimerRunning) return;
 
@@ -256,10 +256,13 @@ export default function Home() {
 
         <div className="relative z-0 mb-4 h-[380px] overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
           <MapView
-            pausePoint={pausePoint}
-            routeGeoJson={routeGeoJson}
-            onUserPositionChange={setUserPosition}
-          />
+  pausePoint={pausePoint}
+  routeGeoJson={routeGeoJson}
+  onUserPositionChange={(position) => {
+    setUserPosition(position);
+    setHasLocationFix(true);
+  }}
+/>
         </div>
 
         <div className="relative z-10 mt-auto space-y-3">
@@ -344,10 +347,18 @@ export default function Home() {
           <button
             type="button"
             onClick={handleGenerateWalk}
-            disabled={isLoadingRoute}
-            className="w-full rounded-[28px] bg-white px-4 py-4 text-base font-semibold tracking-[-0.01em] text-black shadow-[0_8px_24px_rgba(255,255,255,0.12)] transition hover:opacity-90 disabled:opacity-50"
+            disabled={!hasLocationFix || isLoadingRoute}
+           className={`w-full rounded-[24px] px-4 py-4 text-base font-semibold tracking-[-0.01em] transition ${
+  !hasLocationFix || isLoadingRoute
+    ? "bg-white/10 text-white/40"
+    : "bg-white text-black"
+}`}
           >
-            {isLoadingRoute ? "Génération..." : "Générer une balade"}
+            {!hasLocationFix
+  ? "Recherche de ta position..."
+  : isLoadingRoute
+  ? "Génération..."
+  : "Générer une balade"}
           </button>
 
         </div>

@@ -46,6 +46,17 @@ const pauseIcon = new L.DivIcon({
   iconSize: [40, 40],
   iconAnchor: [20, 20],
 });
+const userIcon = new L.DivIcon({
+  html: `
+    <div class="user-marker">
+      <div class="user-marker-pulse"></div>
+      <div class="user-marker-dot"></div>
+    </div>
+  `,
+  className: "",
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
 
 function RecenterMap({
   position,
@@ -171,7 +182,7 @@ export default function MapView({
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full overflow-hidden rounded-[28px] bg-black ring-1 ring-white/10">
       <MapContainer
         center={[48.8566, 2.3522]}
         zoom={13}
@@ -185,7 +196,7 @@ export default function MapView({
 
         {position && (
           <>
-            <Marker position={position}>
+            <Marker position={position} icon={userIcon}>
               <Popup>Tu es ici</Popup>
             </Marker>
 
