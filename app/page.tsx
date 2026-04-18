@@ -120,6 +120,8 @@ export default function Home() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showDrawingComplete, setShowDrawingComplete] = useState(false);
   const [hasTriggeredArrival, setHasTriggeredArrival] = useState(false);
+  const [isWalkCardExpanded, setIsWalkCardExpanded] = useState(true);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [hasLocationFix, setHasLocationFix] = useState(false);
   useEffect(() => {
     if (!isTimerRunning) return;
@@ -178,6 +180,7 @@ export default function Home() {
     setIsLoadingRoute(true);
     setRouteGeoJson(null);
     setPausePoint(null);
+    setIsWalkCardExpanded(false);
     setHasTriggeredArrival(false);
     setShowArrivalOverlay(false);
 
@@ -266,101 +269,151 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 mt-auto space-y-3">
-          <div className="rounded-[32px] bg-white/[0.03] p-5 ring-1 ring-white/8 backdrop-blur-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-white/35">
-                  Balade du jour
-                </p>
+<div
+  className={`rounded-[32px] bg-white/[0.03] ring-1 ring-white/8 backdrop-blur-sm transition-all duration-300 ${
+    isWalkCardExpanded ? "p-5" : "p-4"
+  }`}
+  onTouchStart={(e) => {
+    setTouchStartY(e.touches[0].clientY);
+  }}
+  onTouchEnd={(e) => {
+    if (touchStartY === null) return;
 
-                <h2 className="mt-2 max-w-[190px] text-[28px] font-semibold leading-[1.05] tracking-[-0.04em] text-white">
-                  {getWalkTitle(walkDuration)}
-                </h2>
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchEndY - touchStartY;
 
-                <p className="mt-3 max-w-[220px] text-sm leading-6 text-white/50">
-                  Une boucle à pied avec une pause pour observer et dessiner.
-                </p>
-              </div>
+    if (diff > 50 && isWalkCardExpanded) {
+      setIsWalkCardExpanded(false);
+    }
 
-              <div className="rounded-full bg-white/[0.04] p-1 ring-1 ring-white/8">
-                <div className="flex gap-1">
-                  {[20, 30, 40].map((duration) => {
-                    const isActive = walkDuration === duration;
+if (diff < -50 && !isWalkCardExpanded) {
+  setIsWalkCardExpanded(true);
+}
 
-                    return (
-                      <button
-                        key={duration}
-                        type="button"
-                        onClick={() =>
-                          setWalkDuration(duration as 20 | 30 | 40)
-                        }
-                        className={`min-w-[52px] rounded-full px-3 py-2 text-[11px] font-medium leading-none transition ${
-                          isActive
-                            ? "bg-white text-black shadow-sm"
-                            : "text-white/45 hover:text-white/70"
-                        }`}
-                      >
-                        <span className="block text-center">{duration}</span>
-                        <span className="mt-1 block text-center text-[10px] opacity-70">
-                          min
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+    setTouchStartY(null);
+  }}
+>
+{isWalkCardExpanded ? (
+  <>
+    <div className="mb-2 flex justify-center pt-1">
+      <div className="h-1.5 w-10 rounded-full bg-white/25" />
+    </div>
 
-{(routeDistance || routeDuration || distanceToPausePoint !== null) && (
-  <div className="mt-4 flex flex-wrap gap-2">
-    {routeDistance && (
-      <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
-        {routeDistance}
-      </div>
-    )}
+    <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-white/35">
+            Balade du jour
+          </p>
 
-    {routeDuration && (
-      <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
-        {routeDuration}
-      </div>
-    )}
+          <h2 className="mt-2 max-w-[190px] text-[28px] font-semibold leading-[1.05] tracking-[-0.04em] text-white">
+            {getWalkTitle(walkDuration)}
+          </h2>
 
-    {distanceToPausePoint !== null && (
-      <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
-        Point dessin à {distanceToPausePoint} m
-      </div>
-    )}
-  </div>
-)}
+          <p className="mt-3 max-w-[220px] text-sm leading-6 text-white/50">
+            Une boucle à pied avec une pause pour observer et dessiner.
+          </p>
+        </div>
 
-            {isLoadingRoute && (
-              <p className="mt-4 text-sm text-white/55">
-                Génération de la balade...
-              </p>
-            )}
+        <div className="rounded-full bg-white/[0.04] p-1 ring-1 ring-white/8">
+          <div className="flex gap-1">
+            {[20, 30, 40].map((duration) => {
+              const isActive = walkDuration === duration;
 
-            {!isLoadingRoute && routeGeoJson && (
-              <p className="mt-4 text-sm text-white/55">La balade est prête.</p>
-            )}
+              return (
+                <button
+                  key={duration}
+                  type="button"
+                  onClick={() =>
+                    setWalkDuration(duration as 20 | 30 | 40)
+                  }
+                  className={`min-w-[52px] rounded-full px-3 py-2 text-[11px] font-medium leading-none transition ${
+                    isActive
+                      ? "bg-white text-black shadow-sm"
+                      : "text-white/45 hover:text-white/70"
+                  }`}
+                >
+                  <span className="block text-center">{duration}</span>
+                  <span className="mt-1 block text-center text-[10px] opacity-70">
+                    min
+                  </span>
+                </button>
+              );
+            })}
           </div>
+        </div>
+      </div>
 
-          <button
-            type="button"
-            onClick={handleGenerateWalk}
-            disabled={!hasLocationFix || isLoadingRoute}
-           className={`w-full rounded-[24px] px-4 py-4 text-base font-semibold tracking-[-0.01em] transition ${
-  !hasLocationFix || isLoadingRoute
-    ? "bg-white/10 text-white/40"
-    : "bg-white text-black"
-}`}
-          >
-            {!hasLocationFix
-  ? "Recherche de ta position..."
-  : isLoadingRoute
-  ? "Génération..."
-  : "Générer une balade"}
-          </button>
+      {(routeDistance || routeDuration || distanceToPausePoint !== null) && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {routeDistance && (
+            <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
+              {routeDistance}
+            </div>
+          )}
 
+          {routeDuration && (
+            <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
+              {routeDuration}
+            </div>
+          )}
+
+          {distanceToPausePoint !== null && (
+            <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
+              Point dessin à {distanceToPausePoint} m
+            </div>
+          )}
+        </div>
+      )}
+
+      {isLoadingRoute && (
+        <p className="mt-4 text-sm text-white/55">
+          Génération de la balade...
+        </p>
+      )}
+
+      {!isLoadingRoute && routeGeoJson && (
+        <p className="mt-4 text-sm text-white/55">La balade est prête.</p>
+      )}
+    </>
+) : (
+  <>
+    <div className="mb-2 flex justify-center pt-1">
+      <div className="h-1.5 w-10 rounded-full bg-white/25" />
+    </div>
+
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-white/35">
+          Balade du jour
+        </p>
+
+        <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.03em] text-white">
+          {getWalkTitle(walkDuration)}
+        </h2>
+      </div>
+    </div>
+  </>
+  )}
+</div>
+
+{isWalkCardExpanded && (
+  <button
+    type="button"
+    onClick={handleGenerateWalk}
+    disabled={!hasLocationFix || isLoadingRoute}
+    className={`w-full rounded-[24px] px-4 py-4 text-base font-semibold tracking-[-0.01em] transition ${
+      !hasLocationFix || isLoadingRoute
+        ? "bg-white/10 text-white/40"
+        : "bg-white text-black"
+    }`}
+  >
+    {!hasLocationFix
+      ? "Recherche de ta position..."
+      : isLoadingRoute
+      ? "Génération..."
+      : "Générer une balade"}
+  </button>
+)}
         </div>
       </section>
       {isDrawing && (
