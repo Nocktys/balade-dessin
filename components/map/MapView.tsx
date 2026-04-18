@@ -55,14 +55,17 @@ function RecenterMap({
   onMapReady: (map: LeafletMap) => void;
 }) {
   const map = useMap();
+  const hasCenteredInitially = useRef(false);
 
   useEffect(() => {
     onMapReady(map);
   }, [map, onMapReady]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || hasCenteredInitially.current) return;
+
     map.setView(position, 15);
+    hasCenteredInitially.current = true;
   }, [position, map]);
 
   return null;
