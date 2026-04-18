@@ -82,6 +82,30 @@ function formatDrawingTime(totalSeconds: number): string {
 
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
+function getDistanceInMeters(
+  pointA: [number, number],
+  pointB: [number, number]
+): number {
+  const [lat1, lng1] = pointA;
+  const [lat2, lng2] = pointB;
+
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const earthRadius = 6371000;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadius * c;
+}
 export default function Home() {
   const [userPosition, setUserPosition] = useState<[number, number] | null>(
     null,
@@ -96,6 +120,7 @@ export default function Home() {
   const [drawingSeconds, setDrawingSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showDrawingComplete, setShowDrawingComplete] = useState(false);
+  const [hasTriggeredArrival, setHasTriggeredArrival] = useState(false);
   useEffect(() => {
     if (!isTimerRunning) return;
 
@@ -107,6 +132,16 @@ export default function Home() {
       window.clearInterval(interval);
     };
   }, [isTimerRunning]);
+  useEffect(() => {
+  if (!userPosition || !pausePoint || hasTriggeredArrival || isDrawing) return;
+
+  const distance = getDistanceInMeters(userPosition, pausePoint);
+
+  if (distance <= 20) {
+    setShowArrivalOverlay(true);
+    setHasTriggeredArrival(true);
+  }
+}, [userPosition, pausePoint, hasTriggeredArrival, isDrawing]);
   async function fetchRoute(start: [number, number], length: number) {
     const response = await fetch("/api/route", {
       method: "POST",
@@ -143,6 +178,8 @@ export default function Home() {
     setIsLoadingRoute(true);
     setRouteGeoJson(null);
     setPausePoint(null);
+    setHasTriggeredArrival(false);
+    setShowArrivalOverlay(false);
 
     try {
       let targetDuration = walkDuration;
@@ -188,6 +225,10 @@ export default function Home() {
   };
   const routeDistance = getRouteDistanceKm(routeGeoJson);
   const routeDuration = getRouteDurationMinutes(routeGeoJson);
+  const distanceToPausePoint =
+  userPosition && pausePoint
+    ? Math.round(getDistanceInMeters(userPosition, pausePoint))
+    : null;
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4">
@@ -267,21 +308,27 @@ export default function Home() {
               </div>
             </div>
 
-            {(routeDistance || routeDuration) && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {routeDistance && (
-                  <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
-                    {routeDistance}
-                  </div>
-                )}
+{(routeDistance || routeDuration || distanceToPausePoint !== null) && (
+  <div className="mt-4 flex flex-wrap gap-2">
+    {routeDistance && (
+      <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
+        {routeDistance}
+      </div>
+    )}
 
-                {routeDuration && (
-                  <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
-                    {routeDuration}
-                  </div>
-                )}
-              </div>
-            )}
+    {routeDuration && (
+      <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
+        {routeDuration}
+      </div>
+    )}
+
+    {distanceToPausePoint !== null && (
+      <div className="rounded-full bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/65 ring-1 ring-white/8">
+        Point dessin à {distanceToPausePoint} m
+      </div>
+    )}
+  </div>
+)}
 
             {isLoadingRoute && (
               <p className="mt-4 text-sm text-white/55">

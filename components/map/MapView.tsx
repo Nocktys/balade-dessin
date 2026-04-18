@@ -104,10 +104,8 @@ export default function MapView({
   routeGeoJson = null,
   onUserPositionChange,
 }: MapViewProps) {
-  const TEST_POSITION: [number, number] = [
-    43.622375553789844, 1.4072455439921454,
-  ];
-  const [useTestPosition, setUseTestPosition] = useState(true);
+  
+  
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isMounted, setIsMounted] = useState(false);
@@ -125,13 +123,7 @@ export default function MapView({
   }, []);
 
   useEffect(() => {
-    if (useTestPosition) {
-      setPosition(TEST_POSITION);
-      onUserPositionChange?.(TEST_POSITION);
-      setErrorMessage("");
-      return;
-    }
-
+    
     if (!navigator.geolocation) {
       setErrorMessage(
         "La géolocalisation n'est pas supportée sur cet appareil.",
@@ -163,7 +155,7 @@ export default function MapView({
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
-  }, [onUserPositionChange, useTestPosition]);
+  }, [onUserPositionChange]);
 
   const handleRecenter = () => {
     if (!position || !mapRef.current) return;
@@ -261,15 +253,7 @@ export default function MapView({
         >
           Me recentrer
         </button>
-        <button
-          type="button"
-          onClick={() => setUseTestPosition((prev) => !prev)}
-          className="rounded-2xl bg-black/70 px-4 py-2 text-xs font-medium text-white shadow-lg backdrop-blur"
-        >
-          {useTestPosition
-            ? "Utiliser ma vraie position"
-            : "Utiliser la position test"}
-        </button>
+
       </div>
 
       {errorMessage ? (
