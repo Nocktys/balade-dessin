@@ -231,7 +231,7 @@ export default function Home() {
     : null;
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
-      <section className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4">
+     <section className="mx-auto flex h-[100dvh] w-full max-w-md flex-col overflow-hidden px-4 py-4">
         <header className="mb-5">
           <div className="flex items-center justify-between">
             <div>
