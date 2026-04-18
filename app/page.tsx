@@ -122,6 +122,7 @@ export default function Home() {
   const [hasTriggeredArrival, setHasTriggeredArrival] = useState(false);
   const [isWalkCardExpanded, setIsWalkCardExpanded] = useState(true);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
   const [hasLocationFix, setHasLocationFix] = useState(false);
   useEffect(() => {
     if (!isTimerRunning) return;
@@ -270,11 +271,29 @@ export default function Home() {
 
         <div className="relative z-10 mt-auto space-y-3">
 <div
-  className={`rounded-[32px] bg-white/[0.03] ring-1 ring-white/8 backdrop-blur-sm transition-all duration-300 ${
+  className={`rounded-[32px] bg-white/[0.03] ring-1 ring-white/8 backdrop-blur-sm ${
     isWalkCardExpanded ? "p-5" : "p-4"
   }`}
+style={{
+  transform: `translateY(${dragOffsetY}px)`,
+  transition: touchStartY === null ? "transform 0.25s ease" : "none",
+}}
   onTouchStart={(e) => {
     setTouchStartY(e.touches[0].clientY);
+  }}
+  onTouchMove={(e) => {
+    if (touchStartY === null) return;
+
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - touchStartY;
+
+    if (isWalkCardExpanded && diff > 0) {
+      setDragOffsetY(Math.min(diff, 120));
+    }
+
+    if (!isWalkCardExpanded && diff < 0) {
+      setDragOffsetY(Math.max(diff, -120));
+    }
   }}
   onTouchEnd={(e) => {
     if (touchStartY === null) return;
@@ -286,11 +305,12 @@ export default function Home() {
       setIsWalkCardExpanded(false);
     }
 
-if (diff < -50 && !isWalkCardExpanded) {
-  setIsWalkCardExpanded(true);
-}
+    if (diff < -50 && !isWalkCardExpanded) {
+      setIsWalkCardExpanded(true);
+    }
 
     setTouchStartY(null);
+    setDragOffsetY(0);
   }}
 >
 {isWalkCardExpanded ? (
