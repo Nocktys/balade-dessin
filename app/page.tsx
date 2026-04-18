@@ -137,7 +137,7 @@ export default function Home() {
 
   const distance = getDistanceInMeters(userPosition, pausePoint);
 
-  if (distance <= 20) {
+  if (distance <= 10) {
     setShowArrivalOverlay(true);
     setHasTriggeredArrival(true);
   }
@@ -349,15 +349,7 @@ export default function Home() {
           >
             {isLoadingRoute ? "Génération..." : "Générer une balade"}
           </button>
-          {isTestArrivalMode && pausePoint && (
-            <button
-              type="button"
-              onClick={() => setShowArrivalOverlay(true)}
-              className="w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/[0.06]"
-            >
-              Tester l’arrivée au point dessin
-            </button>
-          )}
+
         </div>
       </section>
       {isDrawing && (
