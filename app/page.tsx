@@ -271,21 +271,23 @@ export default function Home() {
 
         <div className="relative z-10 mt-auto space-y-3">
 <div
-  className={`rounded-[32px] bg-white/[0.03] ring-1 ring-white/8 backdrop-blur-sm ${
+  className={`touch-none select-none rounded-[32px] bg-white/[0.03] ring-1 ring-white/8 backdrop-blur-sm ${
     isWalkCardExpanded ? "p-5" : "p-4"
   }`}
-style={{
-  transform: `translateY(${dragOffsetY}px)`,
-  transition: touchStartY === null ? "transform 0.25s ease" : "none",
-}}
+  style={{
+    transform: `translateY(${dragOffsetY}px)`,
+    transition: touchStartY === null ? "transform 0.25s ease" : "none",
+  }}
   onTouchStart={(e) => {
     setTouchStartY(e.touches[0].clientY);
   }}
-  onTouchMove={(e) => {
-    if (touchStartY === null) return;
+onTouchMove={(e) => {
+  if (touchStartY === null) return;
 
-    const currentY = e.touches[0].clientY;
-    const diff = currentY - touchStartY;
+  e.preventDefault();
+
+  const currentY = e.touches[0].clientY;
+  const diff = currentY - touchStartY;
 
     if (isWalkCardExpanded && diff > 0) {
       setDragOffsetY(Math.min(diff, 120));
